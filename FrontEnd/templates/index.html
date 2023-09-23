@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <link rel="stylesheet" href="../static/styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
 </head>
 
 <body>
@@ -92,6 +92,8 @@
             document.getElementById('support-input').value = '';
         }
     });
+    let speechSynthesis = window.speechSynthesis;
+    let currentUtterance = null;
 
     function addMessageToChat(message, sender) {
         // Criar os elementos necessários
@@ -118,14 +120,70 @@
             messageDiv.appendChild(iconSpan);
             messageDiv.appendChild(messageP);
         }
+        if (sender === 'bot') {
+            var btn = document.createElement('span');
+            btn.className = 'play-icon';
+            btn.innerHTML = '<i class="fas fa-play"></i>';
+            messageDiv.appendChild(btn);
 
+            // Adicionar um evento de clique ao ícone
+            btn.addEventListener('click', function (event) {
+                playBotResponse(message, btn);
+            });
+        }
         // Adicionar a nova mensagem ao chat
         document.querySelector('.chat-messages').appendChild(messageDiv);
 
         // Chamar a função para rolar para a parte inferior
         scrollToBottom();
     }
+    function playBotResponse(message, btn) {
+        if (currentUtterance) {
+            speechSynthesis.cancel(); // Interrompe qualquer fala atual
+            resetAllButtons();
+            btn.innerHTML = '<i class="fas fa-play"></i>';
+            currentUtterance = null;
+            return;
+        }
+        disableAllButtonsExcept(btn);
 
+        currentUtterance = new SpeechSynthesisUtterance(message);
+
+        currentUtterance.onend = function () {
+            enableAllButtons();
+            btn.innerHTML = '<i class="fas fa-play"></i>';
+            currentUtterance = null;
+        };
+        speechSynthesis.speak(currentUtterance);
+
+        // Mudando icone para pause
+        btn.innerHTML = '<i class="fas fa-pause"></i>';
+    }
+
+    function resetAllButtons() {
+        let allBtns = document.querySelectorAll(".play-icon");
+        allBtns.forEach(function (btn) {
+            btn.innerHTML = '<i class="fas fa-play"></i>';
+            btn.classList.remove('disabled'); // Remove a classe 'disabled'
+        });
+    }
+
+    function disableAllButtonsExcept(btn) {
+        let allBtns = document.querySelectorAll(".play-icon");
+        allBtns.forEach(function (button) {
+            if (btn !== button) {
+                button.classList.add('disabled'); // Adicione a classe 'disabled'
+            }
+        });
+        btn.classList.remove('disabled');
+    }
+
+    function enableAllButtons() {
+        let allBtns = document.querySelectorAll(".play-icon");
+        allBtns.forEach(function (btn) {
+            btn.classList.remove('disabled'); // Remove a classe 'disabled'
+        });
+    }
     function addTempMessageToChat() {
         // Criar os elementos necessários
         var messageDiv = document.createElement('div');

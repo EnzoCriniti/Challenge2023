@@ -174,3 +174,15 @@
     .blinking {
         animation: blinking 1s infinite;
     }
+
+    .play-icon {
+        cursor: pointer;
+        margin-left: 10px;
+    }
+    
+    .play-icon.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    
