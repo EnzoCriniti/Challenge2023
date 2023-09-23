@@ -1,4 +1,4 @@
-#ChatBot Web App with Elasticsearch
+# ChatBot Web App with Elasticsearch:
 
 Este projeto consiste em uma aplicação web que utiliza Docker para orquestrar os containers de frontend, backend, Elasticsearch e Nginx. A aplicação permite que os usuários interajam com um chatbot que responde a perguntas armazenadas em um índice Elasticsearch.
 
@@ -55,7 +55,7 @@ Copy code
 docker restart Challenge2023FIAP_nginx_1
 Agora sua aplicação deve estar em execução e acessível em https://seu_dominio.
 
-#Uso da Aplicação:
+# Uso da Aplicação:
 
 Acesse a aplicação em https://seu_dominio.
 Interaja com o chatbot para fazer perguntas e obter respostas com base na busca por similaridade em perguntas armazenadas no Elasticsearch.
