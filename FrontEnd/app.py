@@ -44,6 +44,7 @@ def send_message():
     # Verifica se a requisição foi bem-sucedida
     if response.status_code == 200:
         result = response.json()['botResponse']
+        
     else:
         result = "Erro ao comunicar com a API"
     
