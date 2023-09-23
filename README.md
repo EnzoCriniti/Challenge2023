@@ -23,7 +23,7 @@ docker-compose.yml
 README.md
 Como Executar:
 
-#Pré-requisitos:
+# Pré-requisitos:
 
 Docker instalado na máquina local.
 Certbot instalado para configurar certificados SSL/TLS.
