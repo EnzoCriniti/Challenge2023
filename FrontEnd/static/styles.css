@@ -1,0 +1,177 @@
+    /* Reset de estilos padrão do navegador */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        background-image: url('./13104.jpg');
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+        display: flex;
+        align-items: center;
+        height: 100vh;
+        backdrop-filter: blur(3px);
+        width: 100vw;
+        height: 100vh;
+        overflow: auto;
+        min-width: 320px;
+        min-height: 480px;
+    }
+
+    .main-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center; 
+        justify-content: center; 
+        height: 100vh;
+        padding: 20px 0;
+        width: 100%;
+    }
+    
+    .chat-container {
+        width: 550px;
+        background-color: #fff;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-left: 300%;
+        margin-top: auto;
+        margin: 120px 0;
+    }
+        
+    .buttons-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 400px; /* Mesma largura do chat-container para alinhamento */
+        background-color: #4b4d49;
+        padding: 12px;
+        border-radius: 5px;
+        margin: 20px 0;
+    }
+
+    .chat-header {
+        background-color: #595d56;
+        color: #fff;
+        text-align: center;
+        padding: 12px;
+        font-size: 24px;
+    }
+
+    .p-options{
+        color: #fff;
+        text-align: center;
+        padding: 12px;
+        font-size: 20px;
+    }
+
+    .chat-messages {
+        padding: 10px;
+        max-height: 300px;
+        overflow-y: scroll;
+        background-color: #a2aa9e;
+        /* Substitua 'library-background.png' pelo nome da sua imagem de fundo */
+        background-size: cover;
+    }
+    .message {
+        border-radius: 5px;
+        font-family: 'Pixel', Arial, sans-serif;
+        display: flex;
+        align-items: center;
+        /* Adiciona um espaçamento entre as mensagens */
+        margin-bottom: 10px;
+    }
+
+    .message p {
+        background-color: #f1f1f1;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 1;
+        word-wrap: break-word;
+    }
+
+
+    .message.sent {
+        text-emphasis: right;
+        margin-left: 30%;
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+
+    .message.received {
+        text-align: left;
+        margin-right: 30%;
+    }
+
+    .chat-input {
+        display: flex;
+        padding: 10px;
+        border-top: 1px solid #a2aa9e;
+        background-color: #a2aa9e;
+    }
+
+    input[type="text"] {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        font-family: 'Pixel', Arial, sans-serif;
+        background-color: #f1f1f1;
+    }
+    button {
+        background-color: #a2aa9e;
+        color: #2b2529;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-family: 'Pixel', Arial, sans-serif;
+        transition: background-color 0.3s; /* Adiciona uma transição suave ao mudar a cor de fundo */
+        margin: 0 15px; /* Adiciona uma margem horizontal para os botões */
+    }
+    button.selected {
+        background-color: #f1f1f1;
+    }
+    button#send-button {
+        background-color: #595d56;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-family: 'Pixel', Arial, sans-serif;
+        margin: 0;
+    }
+
+    button#send-button:hover {
+        background-color: #2b2529;
+    }
+
+    .icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 2px;
+        fill: currentColor;
+        /* A cor do ícone será a mesma que o texto */
+        vertical-align: middle;
+    }
+
+    .user-icon,
+    .bot-icon {
+        vertical-align: text-bottom;
+        /* Alinhar os ícones com a parte inferior do texto */
+    }
+    @keyframes blinking {
+        0% { opacity: 0.5; }
+        50% { opacity: 1; }
+        100% { opacity: 0.5; }
+    }
+    
+    .blinking {
+        animation: blinking 1s infinite;
+    }
