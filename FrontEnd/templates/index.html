@@ -11,7 +11,7 @@
 
 <body>
     <div class="main-container">
-        <div class="chat-container" id ="support-chat">
+        <div class="chat-container" id="support-chat">
             <div class="chat-header">
                 <h2>EmpathiaBot</h2>
             </div>
@@ -28,52 +28,30 @@
                 <button id="support-send-button" class="send-button">Enviar</button>
             </div>
         </div>
-        <div class="chat-container" id ="student-chat" style="display: none;">
-            <div class="chat-header">
-                <h2>EmpathiaBot</h2>
-            </div>
-            <div class="chat-messages">
-                <div class="message received">
-                    <span class="icon user-icon">
-                        <img src="../static/ai.png" alt="Bot Icon" class="icon bot-icon">
-                    </span>
-                    <p class="user">Seja bem vindo.</p>
-                </div>
-            </div>
-            <div class="chat-input">
-                <input type="text" id="student-input" class="chat-input-field" placeholder="Digite sua mensagem...">
-                <button id="student-send-button" class="send-button">Enviar</button>
-            </div>
-        </div>
-        <div class="buttons-container">
-            <p class="p-options">Modelo: </p>
-            <button id="support-button">Suporte</button>
-            <button id="student-button">Estudantes</button>
-        </div>
     </div>
 </body>
 <script>
     function updateEmoji() {
         fetch('/getSentiment')
-        .then(response => response.json())
-        .then(data => {
-            const emoji_map = {
-                "POSITIVO": "😊",
-                "NEGATIVO": "😢",
-                "NEUTRO": "😐"
-            };
-            const chatHeader = document.querySelector('.chat-header h2');
-            chatHeader.textContent = "EmpathiaBot " + emoji_map[data.sentimento];
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+            .then(response => response.json())
+            .then(data => {
+                const emoji_map = {
+                    "POSITIVO": "😊",
+                    "NEGATIVO": "😢",
+                    "NEUTRO": "😐"
+                };
+                const chatHeader = document.querySelector('.chat-header h2');
+                chatHeader.textContent = "EmpathiaBot " + emoji_map[data.sentimento];
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
     }
 
     // Atualize o emoji a cada 30 segundos
     setInterval(updateEmoji, 10000);
 
-    document.getElementById('support-send-button').addEventListener('click', function() {
+    document.getElementById('support-send-button').addEventListener('click', function () {
         // Pegar o valor do input
         var userInput = document.getElementById('support-input').value;
         var sendButton = document.getElementById('support-send-button'); // Referência para o botão
@@ -93,68 +71,28 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message: userInput, type: 'support'})
+                body: JSON.stringify({ message: userInput, type: 'support' })
             })
-            .then(response => response.json())
-            .then(data => {
-                // Remover a mensagem temporária
-                tempMessage.remove();
+                .then(response => response.json())
+                .then(data => {
+                    // Remover a mensagem temporária
+                    tempMessage.remove();
 
-                // Adicionar a resposta do bot ao chat
-                addMessageToChat(data.response, 'bot');
-                sendButton.disabled = false;
-            })
-            .catch(error => {
-                // Remover a mensagem temporária em caso de erro também
-                tempMessage.remove();
-                console.error('Error:', error);
-            });
+                    // Adicionar a resposta do bot ao chat
+                    addMessageToChat(data.response, 'bot');
+                    sendButton.disabled = false;
+                })
+                .catch(error => {
+                    // Remover a mensagem temporária em caso de erro também
+                    tempMessage.remove();
+                    console.error('Error:', error);
+                });
 
             // Limpar o campo de entrada
             document.getElementById('support-input').value = '';
         }
     });
-    document.getElementById('student-send-button').addEventListener('click', function() {
-        // Pegar o valor do input
-        var userInput = document.getElementById('student-input').value;
-        var sendButton = document.getElementById('student-send-button'); // Referência para o botão
 
-        // Verificar se o input não está vazio
-        if (userInput.trim() !== '') {
-            // Adicionar a mensagem do usuário ao chat
-            addMessageToChat(userInput, 'user');
-
-            sendButton.disabled = true; // Desabilitar o botão para evitar mensagens duplicadas
-
-            // Adicionar a mensagem temporária com animação de piscar
-            var tempMessage = addTempMessageToChat();
-
-            fetch('/sendMessage', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message: userInput, type: 'student' })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Remover a mensagem temporária
-                tempMessage.remove();
-
-                // Adicionar a resposta do bot ao chat
-                addMessageToChat(data.response, 'bot');
-                sendButton.disabled = false;
-            })
-            .catch(error => {
-                // Remover a mensagem temporária em caso de erro também
-                tempMessage.remove();
-                console.error('Error:', error);
-            });
-
-            // Limpar o campo de entrada
-            document.getElementById('student-input').value = '';
-        }
-    });
     function addMessageToChat(message, sender) {
         // Criar os elementos necessários
         var messageDiv = document.createElement('div');
@@ -221,20 +159,6 @@
         var chatMessages = document.querySelector('.chat-messages');
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
-
-    document.getElementById('support-button').addEventListener('click', function() {
-        document.getElementById('support-chat').style.display = 'block';
-        document.getElementById('student-chat').style.display = 'none';
-        this.classList.add('selected');
-        document.getElementById('student-button').classList.remove('selected');
-    });
-
-    document.getElementById('student-button').addEventListener('click', function() {
-        document.getElementById('support-chat').style.display = 'none';
-        document.getElementById('student-chat').style.display = 'block';
-        this.classList.add('selected');
-        document.getElementById('support-button').classList.remove('selected');
-    });
 
 </script>
 

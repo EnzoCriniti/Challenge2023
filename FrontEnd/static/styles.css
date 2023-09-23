@@ -25,29 +25,34 @@
     .main-container {
         display: flex;
         flex-direction: column;
-        align-items: center; 
-        justify-content: center; 
+        align-items: center;
+        justify-content: center;
         height: 100vh;
         padding: 20px 0;
         width: 100%;
     }
-    
+
     .chat-container {
         width: 550px;
         background-color: #fff;
         box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
         border-radius: 10px;
         overflow: hidden;
-        margin-left: 300%;
-        margin-top: auto;
-        margin: 120px 0;
     }
-        
+
+    .chat-input {
+        display: flex;
+        padding: 10px;
+        border-top: 1px solid #a2aa9e;
+        background-color: #a2aa9e;
+    }
+
     .buttons-container {
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 400px; /* Mesma largura do chat-container para alinhamento */
+        width: 400px;
+        /* Mesma largura do chat-container para alinhamento */
         background-color: #4b4d49;
         padding: 12px;
         border-radius: 5px;
@@ -62,7 +67,7 @@
         font-size: 24px;
     }
 
-    .p-options{
+    .p-options {
         color: #fff;
         text-align: center;
         padding: 12px;
@@ -77,6 +82,7 @@
         /* Substitua 'library-background.png' pelo nome da sua imagem de fundo */
         background-size: cover;
     }
+
     .message {
         border-radius: 5px;
         font-family: 'Pixel', Arial, sans-serif;
@@ -101,19 +107,13 @@
         display: flex;
         justify-content: flex-end;
     }
-    
+
 
     .message.received {
         text-align: left;
         margin-right: 30%;
     }
 
-    .chat-input {
-        display: flex;
-        padding: 10px;
-        border-top: 1px solid #a2aa9e;
-        background-color: #a2aa9e;
-    }
 
     input[type="text"] {
         flex: 1;
@@ -123,33 +123,23 @@
         font-family: 'Pixel', Arial, sans-serif;
         background-color: #f1f1f1;
     }
+
     button {
-        background-color: #a2aa9e;
+        background-color: #AEB8D3;
         color: #2b2529;
         border: none;
         border-radius: 5px;
         padding: 10px 20px;
         cursor: pointer;
         font-family: 'Pixel', Arial, sans-serif;
-        transition: background-color 0.3s; /* Adiciona uma transição suave ao mudar a cor de fundo */
-        margin: 0 15px; /* Adiciona uma margem horizontal para os botões */
-    }
-    button.selected {
-        background-color: #f1f1f1;
-    }
-    button#send-button {
-        background-color: #595d56;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        padding: 10px 20px;
-        cursor: pointer;
-        font-family: 'Pixel', Arial, sans-serif;
-        margin: 0;
+        transition: background-color 0.3s;
+        /* Adiciona uma transição suave ao mudar a cor de fundo */
+        margin: 0 15px;
+        /* Adiciona uma margem horizontal para os botões */
     }
 
-    button#send-button:hover {
-        background-color: #2b2529;
+    button:hover {
+        background-color: #6E83B7;
     }
 
     .icon {
@@ -166,12 +156,21 @@
         vertical-align: text-bottom;
         /* Alinhar os ícones com a parte inferior do texto */
     }
+
     @keyframes blinking {
-        0% { opacity: 0.5; }
-        50% { opacity: 1; }
-        100% { opacity: 0.5; }
+        0% {
+            opacity: 0.5;
+        }
+
+        50% {
+            opacity: 1;
+        }
+
+        100% {
+            opacity: 0.5;
+        }
     }
-    
+
     .blinking {
         animation: blinking 1s infinite;
     }
