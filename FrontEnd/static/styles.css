@@ -179,10 +179,33 @@
         cursor: pointer;
         margin-left: 10px;
     }
-    
+
     .play-icon.disabled {
         opacity: 0.5;
         cursor: not-allowed;
         pointer-events: none;
     }
-    
+
+    .button-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .button-container button {
+        padding: 10px 20px;
+        margin: 0 10px;
+        border: none;
+        cursor: pointer;
+        background-color: #f1f1f1;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .button-container button.active {
+        background-color: #ddd;
+    }
+
+    .button-container button:hover {
+        background-color: #ddd;
+    }

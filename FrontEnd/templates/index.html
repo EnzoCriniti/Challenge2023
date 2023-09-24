@@ -11,6 +11,7 @@
 
 <body>
     <div class="main-container">
+        <!-- Chat de Suporte -->
         <div class="chat-container" id="support-chat">
             <div class="chat-header">
                 <h2>EmpathiaBot</h2>
@@ -28,9 +29,64 @@
                 <button id="support-send-button" class="send-button">Enviar</button>
             </div>
         </div>
+        <!-- Chat de Estudantes (é uma cópia do chat de suporte, mas com os IDs adaptados) -->
+        <div class="chat-container" id="student-chat" style="display: none;">
+            <div class="chat-header">
+                <h2>EmpathiaBot</h2>
+            </div>
+            <div class="chat-messages">
+                <div class="message received">
+                    <span class="icon user-icon">
+                        <img src="../static/ai.png" alt="Bot Icon" class="icon bot-icon">
+                    </span>
+                    <p class="user">Seja bem vindo, estudante!</p>
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="student-input" class="chat-input-field" placeholder="Digite sua mensagem...">
+                <button id="student-send-button" class="send-button">Enviar</button>
+            </div>
+        </div>
+        <br>
+        <br>
+        <div class="button-container">
+            <button id="support-button" class="active">Suporte</button>
+            <button id="student-button">Estudantes</button>
+        </div>
     </div>
 </body>
 <script>
+
+    function switchChat(chatToShow, buttonToActivate) {
+        document.getElementById('support-chat').style.display = 'none';
+        document.getElementById('student-chat').style.display = 'none';
+        document.getElementById(chatToShow).style.display = 'block';
+
+        document.getElementById('support-button').classList.remove('active');
+        document.getElementById('student-button').classList.remove('active');
+        document.getElementById(buttonToActivate).classList.add('active');
+    }
+
+    document.getElementById('support-button').addEventListener('click', function () {
+        switchChat('support-chat', 'support-button');
+    });
+
+    document.getElementById('student-button').addEventListener('click', function () {
+        switchChat('student-chat', 'student-button');
+    });
+    document.getElementById('support-button').addEventListener('click', function () {
+        document.getElementById('support-chat').style.display = 'block';
+        document.getElementById('student-chat').style.display = 'none';
+        this.classList.add('active');
+        document.getElementById('student-button').classList.remove('active');
+    });
+
+    document.getElementById('student-button').addEventListener('click', function () {
+        document.getElementById('support-chat').style.display = 'none';
+        document.getElementById('student-chat').style.display = 'block';
+        this.classList.add('active');
+        document.getElementById('support-button').classList.remove('active');
+    });
     function updateEmoji() {
         fetch('/getSentiment')
             .then(response => response.json())
@@ -51,27 +107,26 @@
     // Atualize o emoji a cada 30 segundos
     setInterval(updateEmoji, 10000);
 
-    document.getElementById('support-send-button').addEventListener('click', function () {
-        // Pegar o valor do input
-        var userInput = document.getElementById('support-input').value;
-        var sendButton = document.getElementById('support-send-button'); // Referência para o botão
+    function sendMessage(chatType) {
+        var userInput = document.getElementById(`${chatType}-input`).value;
+        var sendButton = document.getElementById(`${chatType}-send-button`); // Referência para o botão
 
         // Verificar se o input não está vazio
         if (userInput.trim() !== '') {
             // Adicionar a mensagem do usuário ao chat
-            addMessageToChat(userInput, 'user');
+            addMessageToChat(userInput, 'user', chatType);
 
             sendButton.disabled = true; // Desabilitar o botão para evitar mensagens duplicadas
 
             // Adicionar a mensagem temporária com animação de piscar
-            var tempMessage = addTempMessageToChat();
+            var tempMessage = addTempMessageToChat(chatType);
 
             fetch('/sendMessage', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message: userInput, type: 'support' })
+                body: JSON.stringify({ message: userInput, type: chatType })
             })
                 .then(response => response.json())
                 .then(data => {
@@ -79,7 +134,7 @@
                     tempMessage.remove();
 
                     // Adicionar a resposta do bot ao chat
-                    addMessageToChat(data.response, 'bot');
+                    addMessageToChat(data.response, 'bot', chatType);
                     sendButton.disabled = false;
                 })
                 .catch(error => {
@@ -89,13 +144,14 @@
                 });
 
             // Limpar o campo de entrada
-            document.getElementById('support-input').value = '';
+            document.getElementById(`${chatType}-input`).value = '';
         }
-    });
+    }
+
     let speechSynthesis = window.speechSynthesis;
     let currentUtterance = null;
 
-    function addMessageToChat(message, sender) {
+    function addMessageToChat(message, sender, chatType) {
         // Criar os elementos necessários
         var messageDiv = document.createElement('div');
         var messageP = document.createElement('p');
@@ -131,12 +187,17 @@
                 playBotResponse(message, btn);
             });
         }
+
+        // Escolha o chat correto com base no chatType
+        var chatMessages = document.querySelector(`#${chatType}-chat .chat-messages`);
+
         // Adicionar a nova mensagem ao chat
-        document.querySelector('.chat-messages').appendChild(messageDiv);
+        chatMessages.appendChild(messageDiv);
 
         // Chamar a função para rolar para a parte inferior
         scrollToBottom();
     }
+
     function playBotResponse(message, btn) {
         if (currentUtterance) {
             speechSynthesis.cancel(); // Interrompe qualquer fala atual
@@ -184,7 +245,7 @@
             btn.classList.remove('disabled'); // Remove a classe 'disabled'
         });
     }
-    function addTempMessageToChat() {
+    function addTempMessageToChat(chatType) {
         // Criar os elementos necessários
         var messageDiv = document.createElement('div');
         var messageP = document.createElement('p');
@@ -204,8 +265,11 @@
         messageDiv.appendChild(iconSpan);
         messageDiv.appendChild(messageP);
 
+        // Use chatType para determinar a qual chat adicionar a mensagem temporária
+        var chatMessages = document.querySelector(`#${chatType}-chat .chat-messages`);
+
         // Adicionar a nova mensagem ao chat
-        document.querySelector('.chat-messages').appendChild(messageDiv);
+        chatMessages.appendChild(messageDiv);
 
         // Chamar a função para rolar para a parte inferior
         scrollToBottom();
@@ -213,10 +277,17 @@
         return messageDiv; // Retorne a div para que possamos removê-la mais tarde
     }
 
+
     function scrollToBottom() {
         var chatMessages = document.querySelector('.chat-messages');
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
+    document.getElementById('support-send-button').addEventListener('click', function () {
+        sendMessage('support');
+    });
+    document.getElementById('student-send-button').addEventListener('click', function () {
+        sendMessage('student');
+    });
 
 </script>
 

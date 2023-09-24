@@ -1,7 +1,6 @@
-import json
+import json 
 
 def classify_messages(classifier):
-    
     with open('chat.json', 'r', encoding='utf-8') as file:
         data = json.load(file)
         mensagens = data['mensagens']
@@ -33,4 +32,5 @@ def classify_messages(classifier):
         else:
             return "NEUTRO"
 
-
+    # Valor de retorno padrão
+    return "NEUTRO"

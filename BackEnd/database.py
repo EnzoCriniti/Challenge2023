@@ -20,38 +20,41 @@ class CustomElasticsearchORM:
             print(f"Documento inserido com sucesso em {formatted_date}")
         return res['result']
     
-
     def get_document_by_similarity(self, index, question, empathia, n=3, min_similarity=1.0):
         # Corrige a consulta para usar "match" no campo "question"
+        print("Pergunta recebida para consulta:", question)
         res = self.connection.search(
             index=index, 
             query={"match": {"question": question}})
+        
         # Classifica os resultados com base na similaridade da pergunta
         results = sorted(res['hits']['hits'], key=lambda x: x['_score'], reverse=True)
-        # Obtém apenas as respostas com base na empatia fornecida
-        filtered_results = [result for result in results if result['_source']['answer'][0].get(empathia)]
+        print(len(results))
         
         # Filtra resultados com similaridade maior ou igual a min_similarity
-        filtered_results = [result for result in filtered_results if result['_score'] >= min_similarity]
+        filtered_results = [result for result in results if result['_score'] >= min_similarity]
         
-        if not filtered_results:
-            raise Exception("Desculpe mas ainda não fui treinado para responder a esse tipo de pergunta.")
-        
-        # Limita os resultados aos top N
-        top_n_results = filtered_results[:n]
-        
-        # Formata os resultados como um dicionário {índice: [resposta, similaridade]}
-        formatted_results = {}
-        for idx, result in enumerate(top_n_results, 1):
-            resposta = result['_source']['answer'][0][empathia]
-            similaridade = result['_score']
-            formatted_results[idx] = [resposta, similaridade]
-        
-        return formatted_results
+        # Filtra resultados com a empatia desejada na pergunta
+        matching_results = []
 
+        if  len(filtered_results) == 0:
+            raise Exception("Desculpe, não há respostas com a empatia desejada para essa pergunta.")
+        count = 0
+
+        for result in filtered_results:
+            count += 1
+            similarity = result['_score']
+            question = result['_source']['question']
+            answer = result['_source']['answer']
+
+            matching_results.append({str(count): [question,answer[empathia], similarity]})
+
+
+        return matching_results
 
 
 #if __name__ == "__main__":
+    #import json
     #host = 'http://challenge2023fiap_elasticsearch_1:9200'
     #username = 'elastic'
     #password = '123'
@@ -65,12 +68,13 @@ class CustomElasticsearchORM:
         #documents = json.load(file)
 
     #for document_id, document_data in documents.items():
-        #index_name = "supportbot"  # Substitua pelo nome do índice desejado
+        #index_name = "supportbot"  
+        #print(f"Inserindo documento {document_id} no índice {index_name},com dados: {document_data}")
         #result = orm.create_document(index_name, document_data)
         #print(f"Documento {document_id} inserido com resultado: {result}")
 
-    # Exemplo de uso: Retornar os top 3 documentos com a pergunta "O que é depressão?" com empatia 1
-    #results = orm.get_document_by_similarity("supportbot", "Doze mola carai", "1", n=3)
+    #Exemplo de uso: Retornar os top 3 documentos com a pergunta "O que é depressão?" com empatia 1
+    #results = orm.get_document_by_similarity("supportbot", "anxiety", "1", n=3)
     #print(results)
     #for idx, (resposta, similaridade) in results.items():
         #print(f"Documento {idx}:")

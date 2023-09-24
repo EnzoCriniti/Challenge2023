@@ -1,19 +1,20 @@
 from flask import Flask, request, jsonify, make_response
 from translate import Translator
+from database import CustomElasticsearchORM
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import json
+import os
 
 app = Flask(__name__)
 
-#openai.api_key = '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'
+host = 'http://challenge2023fiap_elasticsearch_1:9200'
+username = 'elastic'
+password = '123'
+
+orm = CustomElasticsearchORM(host, username, password)
 
 translator_pt_en = Translator(provider='mymemory', from_lang='pt', to_lang='en')
 translator_en_pt = Translator(provider='mymemory', from_lang='en', to_lang='pt')
-
-# Carregando os dados do arquivo JSON
-with open('data.json', 'r') as file:
-    data = json.load(file)
 
 def safe_translate(message, type):
     # Dividindo a mensagem em segmentos de 500 caracteres ou menos
@@ -28,31 +29,41 @@ def safe_translate(message, type):
     # Combinando os segmentos traduzidos
     return ''.join(translated_segments)
 
-def get_most_similar_response(user_input):
-    all_patterns = [pattern for intent in data["intents"] for pattern in intent["patterns"]]
-    vectorizer = TfidfVectorizer().fit_transform(all_patterns + [user_input])
-    vectors = vectorizer.toarray()
+def get_most_similar_response(user_input, empathia):
+    try:
+        # Obtenha os resultados do Elasticsearch
+        results = orm.get_document_by_similarity("supportbot", user_input, empathia, n=3)
+        
+        # Organizando as respostas e suas pontuações em listas separadas
+        responses = [list(item.values())[0][1] for item in results]
+        es_scores = [list(item.values())[0][2] for item in results]
+        
+        # Calculando a similaridade do cosseno entre a entrada do usuário e as respostas da API
+        vectorizer = TfidfVectorizer().fit_transform([user_input] + responses)
+        cosine_similarities = cosine_similarity(vectorizer[0:1], vectorizer[1:]).flatten()
+        
+        # Ponderando as similaridades: 0.5 * similaridade_cosseno + 0.5 * similaridade_elasticsearch
+        weighted_similarities = [0.5 * cosine + 0.5 * es for cosine, es in zip(cosine_similarities, es_scores)]
+        
+        # Encontrando a resposta com a maior similaridade ponderada
+        best_response_index = weighted_similarities.index(max(weighted_similarities))
+        best_response = responses[best_response_index]
+        
+        return safe_translate(best_response, 'en-pt')
 
-    cosine_similarities = cosine_similarity(vectors[-1:], vectors[:-1])
-    index_of_most_similar = cosine_similarities.argmax()
-
-    for intent in data["intents"]:
-        if all_patterns[index_of_most_similar] in intent["patterns"]:
-            return safe_translate(intent["responses"][0], 'en-pt')  # Aqui, estamos retornando a primeira resposta. Você pode escolher uma resposta aleatória ou implementar outra lógica.
-
-    return "Desculpe, eu não entendi."
+    except Exception as e:
+        print(f"Erro: {e}")  
+        return "Desculpe mas ainda não fui treinado para responder a esse tipo de pergunta."
 
 @app.route('/sendMessage', methods=['POST'])
 def send_message():
     print('Recebi uma requisição!')
     user_message = request.json.get('message')
-    sentimento = request.json.get('sentimental')
-    # Traduzindo a mensagem para inglês
+    empathia = request.json.get('sentiment')
+
     translated_message = safe_translate(str(user_message), 'pt-en')
     
-    # Aqui você pode processar a mensagem do usuário e gerar uma resposta.
-    # Por simplicidade, vamos apenas retornar uma resposta padrão.
-    bot_response = get_most_similar_response(translated_message)
+    bot_response = get_most_similar_response(translated_message, empathia)
 
     return jsonify({'botResponse': bot_response})
     

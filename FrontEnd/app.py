@@ -23,6 +23,7 @@ def send_message():
     # Pega a mensagem do usuário
     data = request.get_json()  
     user_message = data['message']
+    type_chat = data['type']
     
     # Armazenando mensagem no json chat.json
     with open('chat.json', 'r+', encoding='utf-8') as file:
@@ -34,7 +35,8 @@ def send_message():
     
     # Obtenha o sentimento da mensagem do usuário
     sentiment_response = classify_messages(classifier)
-    
+    desc = {'NEGATIVO': "3", 'NEUTRO': "2", 'POSITIVO': "1"}
+    sentiment_response = desc[sentiment_response] 
     # Define a URL da API
     api_url = "http://backend:3000/sendMessage"
         
@@ -49,7 +51,7 @@ def send_message():
         result = "Erro ao comunicar com a API"
     
     # Retorna a resposta para o usuário
-    return jsonify({"response": result})
+    return jsonify({"response": result, "type": type_chat})
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=8000, debug=True)
