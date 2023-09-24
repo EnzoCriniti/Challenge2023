@@ -1,38 +1,79 @@
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Document, Text, Integer, Nested, Search, connections
+from datetime import datetime
 
-# Criamos a conexão com a instância do Elasticsearch, assumindo que ela está rodando localmente
-connections.create_connection(hosts=['http://elasticsearch:9200'])
+class CustomElasticsearchORM:
+    def __init__(self, host, username, password):
+        self.connection = self.create_connection(host, username, password)
 
-# Definimos a estrutura para a Resposta
-class Resposta(Document):
-    texto = Text(analyzer='standard')
-    nivel_empatia = Integer()
+    def create_connection(self, host, username, password):
+        es = Elasticsearch(
+            hosts=[host],
+            basic_auth=(username, password))
+        return es
 
-# Definimos a estrutura para uma Pergunta
-class Pergunta(Document):
-    tipo = Text()                            # "Suporte" ou "Estudante"
-    texto_pergunta = Text(analyzer='standard')
-    respostas = Nested(Resposta)
+    def create_document(self, index, document):
+        now = datetime.now()
+        formatted_date = now.strftime("%Y-%m-%d %H:%M:%S")
+        document['timestamp'] = formatted_date  # Adiciona um campo de data/hora ao documento
+        res = self.connection.index(index=index, document=document)
+        if res['result'] == 'created':
+            print(f"Documento inserido com sucesso em {formatted_date}")
+        return res['result']
+    
 
-    class Index:
-        name = 'perguntas_respostas'
+    def get_document_by_similarity(self, index, question, empathia, n=3, min_similarity=1.0):
+        # Corrige a consulta para usar "match" no campo "question"
+        res = self.connection.search(
+            index=index, 
+            query={"match": {"question": question}})
+        # Classifica os resultados com base na similaridade da pergunta
+        results = sorted(res['hits']['hits'], key=lambda x: x['_score'], reverse=True)
+        # Obtém apenas as respostas com base na empatia fornecida
+        filtered_results = [result for result in results if result['_source']['answer'][0].get(empathia)]
+        
+        # Filtra resultados com similaridade maior ou igual a min_similarity
+        filtered_results = [result for result in filtered_results if result['_score'] >= min_similarity]
+        
+        if not filtered_results:
+            raise Exception("Desculpe mas ainda não fui treinado para responder a esse tipo de pergunta.")
+        
+        # Limita os resultados aos top N
+        top_n_results = filtered_results[:n]
+        
+        # Formata os resultados como um dicionário {índice: [resposta, similaridade]}
+        formatted_results = {}
+        for idx, result in enumerate(top_n_results, 1):
+            resposta = result['_source']['answer'][0][empathia]
+            similaridade = result['_score']
+            formatted_results[idx] = [resposta, similaridade]
+        
+        return formatted_results
 
-Pergunta.init()
 
-# Função para criar uma nova pergunta e suas respostas
-def criar_pergunta(tipo, texto_pergunta, respostas):
-    pergunta = Pergunta(tipo=tipo, texto_pergunta=texto_pergunta)
-    for resp_text, emp_nivel in respostas:
-        pergunta.respostas.append(Resposta(texto=resp_text, nivel_empatia=emp_nivel))
-    pergunta.save()
 
-# Função para buscar perguntas similares
-def busca_similaridade(tipo, query):
-    s = Search(index=Pergunta._index._name).filter('term', tipo=tipo).query("match", texto_pergunta=query)
-    response = s.execute()
+#if __name__ == "__main__":
+    #host = 'http://challenge2023fiap_elasticsearch_1:9200'
+    #username = 'elastic'
+    #password = '123'
 
-    for hit in response:
-        print(f"Pergunta: {hit.texto_pergunta}")
-        for resp in hit.respostas:
-            print(f"  - {resp.texto} (Empatia: {resp.nivel_empatia})")
+    #orm = CustomElasticsearchORM(host, username, password)
+
+    # Nome do arquivo JSON
+    #json_file = 'database.json'
+
+    #with open(json_file, 'r') as file:
+        #documents = json.load(file)
+
+    #for document_id, document_data in documents.items():
+        #index_name = "supportbot"  # Substitua pelo nome do índice desejado
+        #result = orm.create_document(index_name, document_data)
+        #print(f"Documento {document_id} inserido com resultado: {result}")
+
+    # Exemplo de uso: Retornar os top 3 documentos com a pergunta "O que é depressão?" com empatia 1
+    #results = orm.get_document_by_similarity("supportbot", "Doze mola carai", "1", n=3)
+    #print(results)
+    #for idx, (resposta, similaridade) in results.items():
+        #print(f"Documento {idx}:")
+        #print(f"Resposta: {resposta}")
+        #print(f"Similaridade: {similaridade}")
+        #print()
