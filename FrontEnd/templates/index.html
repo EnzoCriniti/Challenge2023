@@ -132,9 +132,11 @@
                 .then(data => {
                     // Remover a mensagem temporária
                     tempMessage.remove();
-
-                    // Adicionar a resposta do bot ao chat
+                    // Printar a resposta do bot no console
+                    console.log(data);
+                    // Adicionar a resposta do bot ao chat com a complexidade
                     addMessageToChat(data.response, 'bot', chatType);
+                    showTooltipForLastUserMessage(data.isComplex);
                     sendButton.disabled = false;
                 })
                 .catch(error => {
@@ -151,16 +153,33 @@
     let speechSynthesis = window.speechSynthesis;
     let currentUtterance = null;
 
+    function showTooltipForLastUserMessage(isComplex) {
+        const sentMessages = document.querySelectorAll(".message.sent");
+        if (sentMessages.length > 0) {
+            const lastSentMessage = sentMessages[sentMessages.length - 1];
+            const lastUserMessageTooltip = lastSentMessage.querySelector(".user-message-tooltip");
+            if (lastUserMessageTooltip) {
+                lastUserMessageTooltip.style.display = 'block';
+                lastUserMessageTooltip.style.opacity = '1 !important';
+                lastUserMessageTooltip.textContent = isComplex ? 'DeepLearning' : 'Similaridade';
+            }
+            console.log(lastUserMessageTooltip);
+        }
+    }
+
+
     function addMessageToChat(message, sender, chatType) {
         // Criar os elementos necessários
         var messageDiv = document.createElement('div');
         var messageP = document.createElement('p');
         var iconSpan = document.createElement('span');
         var iconImg = document.createElement('img');
+        var messageToolTip = document.createElement('div');
 
         // Configurar os atributos e classes dos elementos
         messageDiv.className = 'message ' + (sender === 'user' ? 'sent' : 'received');
         messageP.className = sender === 'user' ? 'bot' : 'user';
+        messageToolTip.className = 'user-message-tooltip';
         messageP.textContent = message;
         iconSpan.className = 'icon ' + (sender === 'user' ? 'bot-icon' : 'user-icon');
         iconImg.src = '../static/' + (sender === 'user' ? 'user.png' : 'ai.png');
@@ -172,6 +191,7 @@
         if (sender === 'user') {
             messageDiv.appendChild(messageP);
             messageDiv.appendChild(iconSpan);
+            messageDiv.appendChild(messageToolTip);
         } else {
             messageDiv.appendChild(iconSpan);
             messageDiv.appendChild(messageP);
